@@ -1,0 +1,130 @@
+SEALS OMT Client 6.3 (OAEI 2016)
+
+*** Changes from version 6.2 (OAEI 2015) ***
+
+> The "batch mode" option, "-z", is now available in the "-o" mode
+  in addition to the "-x" mode.
+
+> A new parameter, "-f FILE_PATH", is now available in "-o" mode,
+  allowing the specification of the file where the output alignment
+  is to be saved.
+
+> A new class "eu.sealsproject.omt.client.interactive.Mapping" has
+  been added to the Client, to be used when querying the Oracle, in
+  interactive matching mode. A "Mapping" can be constructed from
+  the URLs of the source and target terms, plus their relation, in
+  either String form, or as an instance of the Relation enum.
+
+> A new method, check(Set<Mapping>) has been added to the Oracle
+  to simulate the case of a user being asked to pick between
+  "conflicting" mappings for the same class(es), such as: <A = C>,
+  <A = D>, <B = C>. In such a case, choosing between the mappings
+  requires a lot less effort from the user than reviewing them
+  independently. Thus, when given a set of at most 3 mappings, the
+  method will count one less interaction for each entity shared
+  by the mappings (to a minimum of one interaction). However, it
+  must be noted that the method imposes no restriction whatsoever
+  on the input set of mappings - it will accept any number of them
+  and they need not be conflicting; it will simply treat them as
+  independent requests for all intents and purposes, unless the
+  criteria above are met (at most 3 mappings sharing entities). 
+  Thus, systems can use the method for the sake of convenience, to
+  ask about multiple mappings at once, even if they aren't related
+  (e.g., in the case of logical conflicts); but they will gain no
+  benefit for doing so with regard to the evaluation.
+ 
+> A new method, check(Mapping), has also been added to the Oracle
+  so that systems that use the method above can communicate with
+  the Oracle in a consistent manner, when they want to query
+  about individual mappings. The old methods, check(String,String,
+  String) and check(String,String,Relation) are still available
+  for the sake of compatibility.
+
+> [Internal] We have added a safety check to the Oracle's
+  "startSuite", "startTask", "endSuite", and "endTask" methods.
+  These methods are public because the Client class must use them
+  to interact with the Oracle, but they are not meant to be
+  called by any source other than the Client class. As such, the
+  methods now verify whether they have indeed been called by the
+  Client class, and abort the Client's execution otherwise.
+
+
+*** Changes from version 5 (OAEI 2014) ***
+
+> Interactive matching is now activated through "-i <errorRate>"
+  which is available in both the "-x" and the "-o" modes. In the
+  latter, you must pass an input alignment as well to activate
+  interactive matching. Having the "interactive" keyord in the
+  reference alignment metadata is now irrelevant as far as the
+  Client is concerned.
+
+> The Oracle can now return erroneous results, with probability
+  given by the errorRate (which should be a double between 0 and 1).
+
+> In order to enable a suitable evaluation in interactive mode due
+  to the introduction of errors, the Client now computes both the
+  "real" evaluation of the tool and its evaluation in relation to
+  the alignment resulting from the Oracle's errors applied to the
+  reference alignment.
+
+> Furthermore, the Oracle now outputs three files listing:
+    a) the full registry of calls to the Oracle in a test suite,
+    including their classification (TP=True Positive, TN=True
+    Negative, FP=False Positive, FN=False Negative).
+    b) the time interval between consecutive calls within each task
+    (in milliseconds).
+    c) the performance of the Oracle within each task of the suite
+    plus the global classification (Total Requests, TP, TN, FP, FN,
+    Precision and Negative Precision).
+
+> The Oracle.check method now receives the mapping relation in
+  String form ("=",">","<") rather than as an Oracle.Relation
+
+> Mappings with a "?" as mapping relation in the reference
+  alignment are now ignored during evaluation (they are neither
+  counted as positives nor as negatives, but rather are treated
+  as if they didn't exist in both the reference and the tool's
+  alignment). This was the evaluation strategy used in 2014 for
+  the LargeBio track, which is now global since it doesn't
+  conflict with any of the other tracks.
+
+> For the reason above, the Oracle.check method will always return
+  true when the queried mapping exists with a "?" in the reference
+  alignment, but the request will be ignored for all purposes
+  except for measuring the time interval between queries (it will
+  not be registered nor count towards the Oracle's performance).
+
+> The "-xx" a.k.a. "suitestore" option was merged with the "-x"
+  option. You can now activate it by adding "-s <resultsId>
+  <toolName>" at the end of the "-x" options.
+
+> [Internal] A HashMap based data structured is now used to store
+  alignments internally as well as to evaluate them. This greatly
+  increases the efficiency of the Oracle and of the alignment
+  evaluation procedure, and enables the customization of evaluation
+  criteria (such as the evaluation according to the Oracle-error
+  reference or the evaluation excluding "?" mappings)
+
+> [Internal] The reference alignment is now loaded a single time
+  (previously it was loaded separately by Oracle and Client),
+  before the match method is called and the tool's execution clock
+  starts ticking.
+
+> [Internal] Thanks to the two changes above, in interactive mode
+  the tool's execution time is now almost strictly the tool's
+  execution time (there is no longer the alignment loading time
+  involved, and the Oracle queries are now nearly instantaneous).
+
+> [Internal] The Oracle is now self-contained and no longer
+  requests info from the Client. Comunication occurs only in the
+  Client>Oracle direction, and all the Oracle receives as input
+  are a reference alignment and a folder where to store the output
+  files.
+
+> [Internal] The Oracle.Relation enum is now in a separate file
+  as it is used by the HashAlignment as well.
+
+> [Internal] Exception handling was uniformized throughout both
+  Client and Oracle, though addhering to the same phylosophy as
+  before: unless something *really bad* happens, the Client will
+  continue executing to the extent that is possible.
