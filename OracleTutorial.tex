@@ -1,0 +1,146 @@
+\documentclass{article}
+
+\usepackage{url}
+\usepackage{comment}
+\usepackage{mdwlist}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage{alltt}
+\usepackage{tikz}
+\usepackage{tabularx,colortbl}
+\usepackage{color}
+
+\usetikzlibrary{plotmarks,shapes,arrows,backgrounds,fit,shadows,positioning}
+
+\definecolor{ultraviolet}{rgb}{0.3,0,0.5} 
+\definecolor{reed}{rgb}{0.7,0,0.1} 
+\definecolor{greeen}{rgb}{0.1,0.6,0.1} 
+\definecolor{bluee}{rgb}{0.1,0.1,0.95} 
+\definecolor{grayy}{rgb}{0.01,0.25,0.45} 
+
+\def\unclear{\textcolor{reed}{\textbf{UNCLEAR}}}
+\def\term#1{\textcolor{ultraviolet}{\texttt{#1}}}
+\def\file#1{\textcolor{grayy}{\texttt{#1}}}
+\def\tool#1{\textsl{#1}}
+
+\def\todo#1{\begin{center}\fbox{\fbox{\large\textsf{TODO}}\
+\ \parbox[t]{.82\textwidth}{\textsf{#1}}}\end{center}}
+
+\newcommand\smtt[1]{\texttt{\small #1}}
+
+\begin{document}
+
+\title{Using the SEALS Client's Oracle in\\Interactive Matching}
+
+\author{Daniel Faria}
+
+\maketitle
+
+\begin{abstract}
+This tutorial explains how matching systems may use the Oracle class from the SEALS client in the Interactive Matching track of the Ontology Alignment Evaluation Initiative.
+
+For instructions on how to wrap your system for the SEALS platform, please refer to the \href{https://github.com/DanFaria/OAEI_SealsClient/blob/master/SealsClientTutorial.pdf}{SEALS Client Tutorial}.
+\end{abstract}
+
+
+\section{Introduction}
+\label{sec:intro}
+
+The Oracle class of the SEALS client simulates a (single) user that validates mappings. Matching systems can query the Oracle about mapping candidates they generated, as they would a user, and the Oracle will indicate whether those mappings are correct or not (according to the reference alignment of the corresponding matching task).
+
+To simulate the fact that a user may make erroneous validations (depending to his level of expertise about the domain of the ontologies) the Oracle will randomly return erroneous responses, with uniform probability specified at the start of the run (as an input parameter of the SEALS client). Note that, because the Oracle is simulating a single user, asking about the same mapping multiple times to dilute the error is not possible --- the Oracle will reply in the same manner it replied previously, if asked about a mapping more than once. 
+
+To simulate the fact that a user will generally be able to provide an estimate of his expertise or confidence about the matching task, systems can ask the Oracle about its confidence (the complement of the error rate). This will be constant throughout the matching task.
+
+The Oracle also simulates the scenario where a user is asked which of a set of competing mappings are correct, rather than to validate individual mappings. When queried about a set of up to three competing mappings, the Oracle will count this as a single user interaction, rather than an interaction for each mapping. An example of a set of three competing mappings is: \textit{Muscle} \(<=>\) \textit{Muscle}, \textit{Muscle} \(<=>\) \textit{Muscle Tissue}, \textit{Striated Muscle Tissue} \(<=>\) \textit{Muscle Tissue}. Formally, we can say that a set of mappings is competing if, for every pair of mappings in the set, at least one of the mapped entities is shared by the pair.
+
+\section{Interacting with the Oracle class}
+\label{sec:oracle}
+
+\subsection{Importing the Oracle class}
+\label{sec:import}
+The Oracle class is contained in the SEALS client, and can be imported through:
+\begin{verbatim}
+import eu.sealsproject.omt.client.interactive.Oracle;
+\end{verbatim}
+
+Note that, because the evaluation will be done through the SEALS client, you need not include it in the classpath of your matching tool.
+
+\subsection{Simple Check}
+\label{sec:simple}
+The simplest way of asking for feedback about a mapping from the Oracle is through the following method:
+\begin{verbatim}
+static boolean check(String uri1, String uri2, String rel)
+\end{verbatim}
+
+\noindent
+where \textit{uri1} is the URI of the source ontology's entity (class, property, or individual) in string form, \textit{uri2} is the URI of the target ontology's entity in string form, and \textit{rel} is the mapping relation, also in string form (``='', ``\(<\)'', or ``\(>\)'').
+
+If the specified mapping is present in the reference alignment, the Oracle will return \textit{true} with probability equal to \(1-e\), where \textit{e} is the error rate, and \textit{false} with probability \textit{e}. Otherwise, the Oracle will return \textit{false} with probability \(1-e\), and \textit{true} with probability \textit{e}.
+
+\subsection{Check with Relation}
+\label{sec:relation}
+As an alternative to the previous method, systems can use the following method:
+\begin{verbatim}
+static boolean check(String uri1, String uri2, Relation rel)
+\end{verbatim}
+
+\noindent
+where \textit{rel} is given as an instance of the Relation enum (Relation.EQUIVALENCE, Relation.SUBSUMES, or Relation.SUBSUMED\_BY) rather than in string form.
+
+Using this alternative requires importing also the Relation enum:
+\begin{verbatim}
+import eu.sealsproject.omt.client.Relation;
+\end{verbatim}
+
+Again, if the specified mapping is present in the reference alignment, the Oracle will return \textit{true} with probability equal to \(1-e\), where \textit{e} is the error rate, and \textit{false} with probability \textit{e}. Otherwise, the Oracle will return \textit{false} with probability \(1-e\), and \textit{true} with probability \textit{e}.
+
+\subsection{Check Mapping}
+\label{sec:mapping}
+Yet another alternative is the following method:
+\begin{verbatim}
+static boolean check(Mapping m)
+\end{verbatim}
+
+\noindent
+where m is an instance of class Mapping, which can be constructed using either of the following constructors:
+\begin{verbatim}
+Mapping(String sourceURI, String targetURI, String rel)
+Mapping(String sourceURI, String targetURI, Relation rel)
+\end{verbatim}
+
+Using this alternative requires importing the Mapping class:
+\begin{verbatim}
+import eu.sealsproject.omt.client.interactive.Mapping;
+\end{verbatim}
+
+\noindent
+and if you use the second constructor, also the Relation enum, as specified in subsection \ref{sec:relation}.
+
+Once more, if the specified mapping is present in the reference alignment, the Oracle will return \textit{true} with probability equal to \(1-e\), where \textit{e} is the error rate, and \textit{false} with probability \textit{e}. Otherwise, the Oracle will return \textit{false} with probability \(1-e\), and \textit{true} with probability \textit{e}.
+
+\subsection{Check Set of Mappings}
+\label{sec:set}
+The final option for querying the Oracle is the following method:
+\begin{verbatim}
+static Set<Mapping> check(Set<Mapping> maps)
+\end{verbatim}
+
+\noindent
+where \textit{maps} is a set of any number of instances of class Mapping (as per subsection \ref{sec:mapping}).
+
+For each Mapping \textit{m} in \textit{maps}, the method will call $check(m)$. However, to simulate the scenario where the user is asked to choose between competing mappings (as explained in section \ref{sec:intro}) if \textit{maps} contains 2 or 3 Mappings, and all are competing, the method will count this as a single interaction. If \textit{maps} contains 3 Mappings, but only 2 of them are competing, the method will count this as two interactions. Otherwise, the method will count one interaction for each Mapping in \textit{maps}.
+
+The method will return the subset of Mappings \textit{maps} for which the call $check(m)$ returns \textit{true}, as detailed in subsection \ref{sec:mapping}.
+
+\subsection{Oracle Confidence}
+\label{sec:confidence}
+Systems can also ask the Oracle about its confidence (the complement of the error) through the following method:
+\begin{verbatim}
+static double confidence()
+\end{verbatim}
+
+Note that the confidence will be constant throughout each matching task --- it will not reflect the classification of individual mappings, but only the overall reliability of the simulated user.
+
+\end{document}
