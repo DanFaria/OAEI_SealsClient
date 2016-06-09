@@ -218,35 +218,31 @@ To test the SEALS client, you should run it with the following command (note tha
 A:\seals\sealshome>java -jar A:/temp/seals-omt-client.jar
 A:/temp/demomatcher-package [OPTIONS]
 \end{verbatim}
-Please ensure that you execute this command from the \verb|SEALS_HOME| directory and ensure that the path to the jar-file and the unzipped tool-package is valid. In case of problems use absolute paths. If you run this command, it generates the following output.
-The options are the following:
+Please ensure that you execute this command from the \verb|SEALS_HOME| directory and ensure that the path to the jar-file and the unzipped tool-package is valid. In case of problems use absolute paths. The options are the following:
 \small
 \begin{verbatim}
+Options:
 > Predefined test: "<packageLocation> <-t>"
 > Predefined test with input alignment: "<packageLocation> <-ti>"
 > Parametrized test: "<packageLocation> <-o> <ontologyURL1> <ontologyURL2>
-[<inputAlignURL>] [<-f> <outputAlignFile>] [<-i> <errorRate>] [<-z>]"
->>> The "-f" option allows the specification of the file name under which the
-output alignment is to be saved
->>> The "-i" option activates interactive matching (with the given error rate);
-it requires an "inputAlignURL"
->>> The "-z" option activates batch mode - no command line input will be required
-to continue
+[<referenceAlignURL>] [<-f> <outputAlignFile>] [<-i> <errorRate>] [<-z>]"
+> Parametrized test with input alignment: "<packageLocation> <-o> <ontologyURL1> <ontologyURL2>
+<inputAlignURL> [<-f> <outputAlignFile>] [<-z>]"
 > Run suite: "<packageLocation> <-x> <repUri> <suiteId> <versionId> <outputFolder>
 [<-a>] [<-z>] [<-i> <errorRate>] [<-s> <resultsId> <toolName>]"
->>> The "-a" option causes all tests in the suite to be run, including pairs with
-no reference alignment (which are ignored by default)
->>> The "-z" option activates batch mode - no command line input will be required
-to continue
->>> The "-i" option activates interactive matching (with the given error rate, and
-for tasks which have a reference alignment)
->>> The "-s" option activates store mode
+Parameters:
+> -a (-x mode only): all tests in the suite will be run, including those with no reference alignment
+> -f (-o or -oi mode): saves the output alignment to the specified file
+> -i (-o or -x mode): activates interactive matching with the given error rate; requires a <referenceAlignURL> in -o mode
+> -s (-x mode only): activates store mode
+> -z (-o, -oi or -x mode): activates batch mode - no command line input will be required to continue
 \end{verbatim}
 \normalsize
 \begin{itemize}
 	\item \verb|-t| Two predefined ontologies from the Conference test suite in the SEALS test repository are used as input to your matching system. To run this simple test, a connection to the internet is required.
-	\item \verb|-ti| Same as \verb|-t|, however, an alignment is added as input additionally. Requires that the tool implements this specific interface.
-	\item \verb|-o| You must specify as additional arguments the URLs of two ontologies, which can for example be locally stored on your machine. You can optionally provide an input alignment as well, which will be used as in the \verb|-ti| option, or you can provide both an input alignment and a interactive error rate with \verb|-i|, in which case the input alignment will be used to simulate a user in interactive mode.
+	\item \verb|-ti| Same as \verb|-t|, however, an alignment is added as input, to be extended by the tool. Requires that the tool implements this specific interface.
+	\item \verb|-o| You must specify as additional arguments the URLs of two ontologies, which can for example be locally stored on your machine. You can optionally provide a reference alignment as well, which will be used for evaluation and/or in interactive mode; for the later you must specify an interactive error rate with \verb|-i|.
+	\item \verb|-oi| Same as \verb|-o| but you must specify and input alignment to be extended by the tool as in the \verb|-ti| option; interactive mode is not available in this option.
 	\item \verb|-x| You can run a full evaluation locally on your machine and store the evaluation results in a tab-separated output file. Again, a connection to the internet is required to retrieve the input ontologies. Do not forget the argument which specifies the folder, outside of the \verb|SEALS_HOME| directory, in which results are stored. You can find the latest URLs and IDs pointing to available testsuites at \url{http://oaei.ontologymatching.org}. If you provide an interactive error rate with the \verb|-i| option, the evaluation will be done in interactive mode.
 \end{itemize}
 
