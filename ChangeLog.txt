@@ -1,4 +1,16 @@
-SEALS OMT Client 6.3 (OAEI 2016)
+SEALS OMT Client 7.0 (OAEI 2016)
+
+*** Changes from version 6.3 (OAEI 2016) ***
+
+> The "-o" option now accepts an optional reference alignment
+  rather than an input alignment, so as to enable the evaluation
+  of the output alignment.
+  
+> A new "-oi" option was added to reproduce the functionality of
+  the previous "-o" option when an input alignment was given. In
+  this option, the input alignment is mandatory; interactive mode
+  is not available.
+
 
 *** Changes from version 6.2 (OAEI 2015) ***
 
