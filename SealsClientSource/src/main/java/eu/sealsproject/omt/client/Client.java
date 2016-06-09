@@ -42,8 +42,8 @@ import fr.inrialpes.exmo.align.parser.AlignmentParser;
 public class Client
 {
 	//Client Version & Date
-	private static final String VERSION = "6.3";
-	private static final String DATE = "18-05-2016";
+	private static final String VERSION = "7.0";
+	private static final String DATE = "09-06-2016";
 	//Production server
 	private static final String DEFAULT_TDRS_URL = "http://repositories.seals-project.eu/tdrs/";
 	//Links to the ontologies and reference alignment for the default test
@@ -53,7 +53,7 @@ public class Client
 	//Client Modes
 	public enum Mode
 	{
-		PREDEF, PREDEFI, PARAM, SUITE
+		PREDEF, PREDEFI, PARAM, PARAMI, SUITE
 	}
 	//Parameters
 	private static Mode mode = null;
@@ -105,6 +105,8 @@ public class Client
 			mode = Mode.PREDEFI;
 		else if(args[1].equalsIgnoreCase("-o"))
 			mode = Mode.PARAM;
+		else if(args[1].equalsIgnoreCase("-oi"))
+			mode = Mode.PARAMI;
 		else if(args[1].equalsIgnoreCase("-x"))
 			mode = Mode.SUITE;
 		else
@@ -113,7 +115,7 @@ public class Client
 		//Process the remaining arguments according to the mode
 		switch(mode)
 		{
-			//In PREDEF or PREDEFI mode, we can have only 2 parameters
+			//PREDEF or PREDEFI mode - 2 parameters
 			case PREDEF:
 			case PREDEFI:
 				if(args.length != 2)
@@ -135,7 +137,7 @@ public class Client
 					e.printStackTrace();
 				}
 				break;
-			//In PARAM mode, we need at least 4 parameters
+			//PARAM mode - 4+ parameters
 			case PARAM:
 				if(args.length < 4)
 					printArgError();
@@ -147,19 +149,17 @@ public class Client
 					//Then optional parameters
 					if(args.length > 4)
 					{
-						//First check if an optional input alignment was passed
-						URL align = null;
+						//First check if an (optional) alignment was passed
 						int i = 4;
 						if(!args[i].startsWith("-"))
 						{
-							align = (new URI(args[4])).toURL();
+							reference = (new URI(args[4])).toURL();
 							i++;
 						}
 						while(i < args.length)
 						{
 							if(args[i].equalsIgnoreCase("-i") && i < args.length-1)
 							{
-								reference = align;
 								double error = Double.parseDouble(args[++i]);
 								Oracle.startSuite(error,null);
 								interactive = true;
@@ -172,8 +172,6 @@ public class Client
 								printArgError();
 							i++;
 						}
-						if(!interactive)
-							input = align;
 					}
 				}
 				catch(MalformedURLException e)
@@ -187,6 +185,37 @@ public class Client
 					e.printStackTrace();
 				}
 				break;
+				//PARAMI mode - 5+ parameters
+				case PARAMI:
+					if(args.length < 5)
+						printArgError();
+					try
+					{
+						//First the source and target ontology URLs
+						source = (new URI(args[2])).toURL();
+						target = (new URI(args[3])).toURL();
+						input = (new URI(args[4])).toURL();
+						for(int i = 5; i < args.length; i++)
+						{
+							if(args[i].equalsIgnoreCase("-f") && i < args.length-1)
+								outputFile = new File(args[++i]);
+							else if(args[i].equalsIgnoreCase("-z"))
+								automated = true;
+							else
+								printArgError();
+						}
+					}
+					catch(MalformedURLException e)
+					{
+						System.out.println(">>> Argument is not a URL!");
+						e.printStackTrace();
+					}
+					catch(URISyntaxException e)
+					{
+						System.out.println(">>> Argument is not a URL!");
+						e.printStackTrace();
+					}
+					break;
 	   		//In SUITE mode, we need at least 6 parameters
 			case SUITE:
 				if(args.length < 6)
@@ -269,6 +298,17 @@ public class Client
 			else
 				System.out.println(">>> Result stored to URL: " + alignment);
 			Oracle.endSuite();
+	   		if(reference != null)
+	   		{
+	   			HashAlignment output = loadAlignment(alignment);
+	   			refAlign = loadAlignment(reference);
+	   			
+				int[] classif = refAlign.evaluation(output);
+				double[] evaluation = evaluationParameters(classif);
+				System.out.println(">>> Evaluation:");
+				System.out.println("Precision\tRecall\tF-measure\tRun Time");
+				System.out.println(evaluation[0] + "\t" + evaluation[1] + "\t" + evaluation[2] + "\t" + runTime);
+	   		}
 		}
 		
 		//Clean up and exit
@@ -421,6 +461,7 @@ public class Client
 	   		{
 				System.err.println("Matching task unsuccessful: unable to read result '" + alignment + "'");
 				e.printStackTrace();
+				return;
 			}
    		}
 	}
@@ -437,21 +478,23 @@ public class Client
 	private static void printHelpMessage()
 	{
 		System.out.println("SEALS OMT Client " + VERSION + " (" + DATE + ")\n");
-		System.out.println("Usage: \"java -jar seals-omt-client.jar <packageLocation> OPTIONS\"\n");
-		System.out.println("Options:");
+		System.out.println("Usage: \"java -jar seals-omt-client.jar <packageLocation> OPTIONS\"");
+		System.out.println("\nOptions:");
 		System.out.println("> Predefined test: \"<-t>\"");
 		System.out.println("> Predefined test with input alignment: \"<-ti>\"");
-		System.out.println("> Parametrized test: \"<-o> <ontologyURL1> <ontologyURL2> [<inputAlignURL>] " +
-							"[<-f> <ouputFile>] [<-i> <errorRate>]\" [<-z>]");
-		System.out.println(">>> The \"-f\" option saves the output alignment to the specified file");
-		System.out.println(">>> The \"-i\" option activates interactive matching (with the given error rate); it requires an \"inputAlignURL\"");
-		System.out.println(">>> The \"-z\" option activates batch mode - no command line input will be required to continue");
+		System.out.println("> Parametrized test: \"<-o> <ontologyURL1> <ontologyURL2> [<referenceAlignURL>] " +
+							"[<-f> <ouputFile>] [<-i> <errorRate>] [<-z>]\"");
+		System.out.println("> Parametrized test with input alignment: \"<-o> <ontologyURL1> <ontologyURL2> <inputAlignURL> " +
+							"[<-f> <ouputFile>] [<-z>]\"");
 		System.out.println("> Run suite: \"<-x> <repUri> <suiteId> <versionId> <outputFolder> " +
 							"[<-a>] [<-z>] [<-i> <errorRate>] [<-s> <resultsId> <toolName>]\"");
-		System.out.println(">>> The \"-a\" option causes all tests in the suite to be run, including pairs with no reference alignment (which are ignored by default)");
-		System.out.println(">>> The \"-z\" option activates batch mode - no command line input will be required to continue");
-		System.out.println(">>> The \"-i\" option activates interactive matching (with the given error rate, and for tasks which have a reference alignment)");
-		System.out.println(">>> The \"-s\" option activates store mode");
+		System.out.println("\nParameters:");
+		System.out.println("> -a (-x mode only): all tests in the suite will be run, including those with no reference alignment");
+		System.out.println("> -f (-o or -oi mode): saves the output alignment to the specified file");
+		System.out.println("> -i (-o or -x mode): activates interactive matching with the given error rate;" +
+							" requires a <referenceAlignURL> in -o mode");
+		System.out.println("> -s (-x mode only): activates store mode");
+		System.out.println("> -z (-o, -oi or -x mode): activates batch mode - no command line input will be required to continue");
 		System.exit(0);
 	}
 	
