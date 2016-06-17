@@ -51,7 +51,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    <!-- Dependencies from the platform  -->
     <dependencies>
         <dependency>
             <groupId>eu.sealsproject.platform.res</groupId>
@@ -89,15 +88,6 @@
             <artifactId>res-tool-api</artifactId>
             <version>1.1.1</version>
         </dependency>
-<!--
-        <dependency>
-            <groupId>eu.sealsproject.platform.res</groupId>
-            <artifactId>res-worker-utils-api</artifactId>
-            <version>1.1.1</version>
-            <scope>provided</scope>
-        </dependency>
--->
-        <!--  Dependency for metadata generator (same used in BPEL) -->
         <dependency>
             <groupId>eu.sealsproject.domain.omt.metadata</groupId>
             <artifactId>omt-metadata</artifactId>
@@ -111,15 +101,16 @@
                     <artifactId>xercesImpl</artifactId>
                     <groupId>xercesImpl</groupId>
                 </exclusion>
+                <exclusion>
+                	<artifactId>slf4j-api</artifactId>
+                	<groupId>slf4j-api</groupId>
+                </exclusion>
+                <exclusion>
+                	<artifactId>slf4j-log4j</artifactId>
+                	<groupId>slf4j-log4j</groupId>
+                </exclusion>
             </exclusions>
-        <!--Version 2.0 allows for choosing to use (or not) the input
-            parameters of client or bpel as dc:identifier (results
-            repository metadata). For BPEL, the input parameter is used
-            as seals:hasName. For the client, the input parameter is
-            used for both dc:identifier and seals:hasName.--> 
         </dependency>
-
-        <!-- Dependencies for tdrs and rrs -->                
         <dependency>
             <groupId>eu.sealsproject.platform.repos</groupId>
             <artifactId>tdrs-client</artifactId>
@@ -130,36 +121,11 @@
             <artifactId>rrs-client</artifactId>
             <version>1.1</version>
         </dependency>                
-    
-        <!-- OWL API & Jena dependencies -->
-<!--
-        <dependency>
-            <groupId>net.sourceforge.owlapi</groupId>
-            <artifactId>owlapi-api</artifactId>
-            <version>4.1.0</version>
-        </dependency>        
-        <dependency>
-            <groupId>net.sourceforge.owlapi</groupId>
-            <artifactId>owlapi-distribution</artifactId>
-            <version>4.1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>net.sourceforge.owlapi</groupId>
-            <artifactId>owlapi-apibinding</artifactId>
-            <version>4.1.0</version>
-        </dependency>
--->
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>apache-jena-libs</artifactId>
             <type>pom</type>
-            <version>3.0.0</version>
-<!--            <exclusions>
-                <exclusion>
-                    <artifactId>xercesImpl</artifactId>
-                    <groupId>xerces</groupId>
-                </exclusion>
-            </exclusions> -->
+            <version>3.1.0</version>
         </dependency>    
         <dependency>
             <groupId>commons-cli</groupId>
@@ -174,7 +140,12 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.12</version>
+            <version>1.7.20</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.20</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
@@ -184,17 +155,13 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.12</version>
+            <version>1.7.20</version>
         </dependency>
-    <!-- Dependencies for align api (from local repository)-->
-<!--
         <dependency>
-            <groupId>xercesImpl</groupId>
-            <artifactId>xercesImpl</artifactId>
-            <version>4.2-alignapi</version>
-            <scope>provided</scope>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.7.20</version>
         </dependency>
--->
         <dependency>
             <groupId>alignment-api</groupId>
             <artifactId>align</artifactId>
@@ -215,40 +182,12 @@
             <artifactId>ontosim</artifactId>
             <version>4.1</version>
         </dependency>
-<!--
-        <dependency>
-            <groupId>owlapi-bin</groupId>
-            <artifactId>owlapi-bin</artifactId>
-            <version>3.0</version>
-            <scope>provided</scope>
-        </dependency>
--->
-<!--
-        <dependency>
-            <groupId>com.hp.hpl.jena</groupId>
-            <artifactId>jena</artifactId>
-            <version>2.6.2</version>
-        </dependency>        
--->
-        <!-- Dependencies for testing  -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
-<!--
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-core</artifactId>
-            <version>5.2.1</version>
-        </dependency>        
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-codecs</artifactId>
-            <version>5.2.1</version>
-        </dependency> 
--->
         <dependency>
             <groupId>dk.brics.automaton</groupId>
             <artifactId>automaton</artifactId>
