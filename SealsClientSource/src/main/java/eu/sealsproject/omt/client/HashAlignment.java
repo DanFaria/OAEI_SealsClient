@@ -1,5 +1,7 @@
 package eu.sealsproject.omt.client;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Vector;
@@ -42,13 +44,19 @@ public class HashAlignment
 			try
 			{
 				String uri1 = c.getObject1AsURI().toString();
+				uri1 = URLDecoder.decode(uri1, "UTF-8");
 				String uri2 = c.getObject2AsURI().toString();
+				uri2 = URLDecoder.decode(uri2, "UTF-8");
 				Relation r = Relation.parse(c.getRelation().getRelation());
 				add(uri1,uri2,r);
 			}
 			catch(AlignmentException e)
 			{
 				System.err.println("Error reading alignment: " + e.getMessage());
+			}
+			catch(UnsupportedEncodingException e)
+			{
+				System.err.println("Error decoding URI: " + e.getMessage());
 			}        	
 		}
 	}
