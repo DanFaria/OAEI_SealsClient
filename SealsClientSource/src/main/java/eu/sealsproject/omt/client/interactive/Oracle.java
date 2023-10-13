@@ -120,18 +120,22 @@ public class Oracle
 		//group rather than as individual mappings
 		if(maps.size() > 1 && maps.size() < 4)
 		{
-			Set<String> sources = new HashSet<String>();
-			Set<String> targets = new HashSet<String>();
-			for(Mapping m : maps)
+			int related = 0;
+			Vector<Mapping> mapList = new Vector<Mapping>(maps);
+			for(int i = 0; i < mapList.size()-1; i++)
 			{
-				if(sources.contains(m.getSourceURI()) || targets.contains(m.getTargetURI()))
+				for(int j = i+1; j < mapList.size(); j++)
 				{
-					count--;
-					totalCount--;
+					if(mapList.get(i).getSourceURI().equals(mapList.get(j).getSourceURI()) ||
+							mapList.get(i).getTargetURI().equals(mapList.get(j).getTargetURI()))
+					{
+						related++;
+						break;
+					}
 				}
-				sources.add(m.getSourceURI());
-				targets.add(m.getTargetURI());
 			}
+			count -= related;
+			totalCount -= related;
 		}
 		//Return the set of correct mappings
 		return correct;
