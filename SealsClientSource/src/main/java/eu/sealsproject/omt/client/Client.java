@@ -42,8 +42,8 @@ import fr.inrialpes.exmo.align.parser.AlignmentParser;
 public class Client
 {
 	//Client Version & Date
-	private static final String VERSION = "7.0";
-	private static final String DATE = "09-06-2016";
+	private static final String VERSION = "7.1";
+	private static final String DATE = "17-10-2023";
 	//Production server
 	private static final String DEFAULT_TDRS_URL = "http://repositories.seals-project.eu/tdrs/";
 	//Links to the ontologies and reference alignment for the default test
