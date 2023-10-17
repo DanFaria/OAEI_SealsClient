@@ -122,16 +122,13 @@ public class Oracle
 		{
 			int related = 0;
 			Vector<Mapping> mapList = new Vector<Mapping>(maps);
-			for(int i = 0; i < mapList.size()-1; i++)
+			for(int i = 0; i < mapList.size()-1 && related < 2; i++)
 			{
 				for(int j = i+1; j < mapList.size(); j++)
 				{
 					if(mapList.get(i).getSourceURI().equals(mapList.get(j).getSourceURI()) ||
 							mapList.get(i).getTargetURI().equals(mapList.get(j).getTargetURI()))
-					{
 						related++;
-						break;
-					}
 				}
 			}
 			count -= related;
